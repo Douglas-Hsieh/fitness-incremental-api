@@ -1,8 +1,8 @@
 {
     "env": "development",
     "dbConfig": {
-        "host": "localhost",
-        "user": "root",
+        "host": "pg",
+        "user": "postgres",
         "password": "password",
         "database": "test"
     },
