@@ -34,23 +34,26 @@ class FitnessLocationService extends Repository<FitnessLocationEntity> {
     const findFitnessLocation: FitnessLocation = await FitnessLocationEntity.findOne({ where: { userId: fitnessLocationData.userId } });
     if (findFitnessLocation) throw new HttpException(409, `Your userId ${fitnessLocationData.userId} already exists`);
 
-    console.log('fitnessLocationData', fitnessLocationData);
     const createFitnessLocationData: FitnessLocation = await FitnessLocationEntity.create({ ...fitnessLocationData }).save();
 
     return createFitnessLocationData;
   }
 
   public async upsertFitnessLocation(userId: string, fitnessLocationData: CreateFitnessLocationDto): Promise<FitnessLocation> {
+    console.log('FitnessLocationService.upsertFitnessLocation');
+
     if (isEmpty(fitnessLocationData)) throw new HttpException(400, "You're not fitnessLocationData");
 
     const findFitnessLocation: FitnessLocation = await FitnessLocationEntity.findOne({ where: { userId: userId } });
-    if (!findFitnessLocation) throw new HttpException(409, "You're not user");
 
-    console.log('FitnessLocationService.upsertFitnessLocation');
-    await FitnessLocationEntity.upsert({ ...findFitnessLocation, ...fitnessLocationData }, ['userId']);
-
-    const updateFitnessLocation: FitnessLocation = await FitnessLocationEntity.findOne({ where: { id: findFitnessLocation.id } });
-    return updateFitnessLocation;
+    if (!findFitnessLocation) {
+      const createFitnessLocationData: FitnessLocation = await FitnessLocationEntity.create({ ...fitnessLocationData }).save();
+      return createFitnessLocationData;
+    } else {
+      await FitnessLocationEntity.upsert({ ...findFitnessLocation, ...fitnessLocationData, userId: userId }, ['userId']);
+      const updateFitnessLocation: FitnessLocation = await FitnessLocationEntity.findOne({ where: { id: findFitnessLocation.id } });
+      return updateFitnessLocation;
+    }
   }
 }
 
