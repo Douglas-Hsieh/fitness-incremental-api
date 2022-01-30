@@ -29,8 +29,7 @@ class UsersController {
 
   public createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userData: CreateUserDto = req.body;
-      const createUserData: User = await this.userService.createUser(userData);
+      const createUserData: User = await this.userService.createUser();
 
       res.status(201).json({ data: createUserData, message: 'created' });
     } catch (error) {

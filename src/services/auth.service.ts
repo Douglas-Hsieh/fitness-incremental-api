@@ -11,25 +11,37 @@ import { isEmpty } from '@utils/util';
 
 @EntityRepository()
 class AuthService extends Repository<UserEntity> {
-  public async signup(userData: CreateUserDto): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+  // public async signup(userData: CreateUserDto): Promise<User> {
+  //   if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
-    const findUser: User = await UserEntity.findOne({ where: { email: userData.email } });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
+  //   const findUser: User = await UserEntity.findOne({ where: { email: userData.email } });
+  //   if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
 
-    const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await UserEntity.create({ ...userData, password: hashedPassword }).save();
-    return createUserData;
-  }
+  //   const hashedPassword = await hash(userData.password, 10);
+  //   const createUserData: User = await UserEntity.create({ ...userData, password: hashedPassword }).save();
+  //   return createUserData;
+  // }
 
-  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+  // public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
+  //   if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
-    const findUser: User = await UserEntity.findOne({ where: { email: userData.email } });
-    if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
+  //   const findUser: User = await UserEntity.findOne({ where: { email: userData.email } });
+  //   if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
 
-    const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
-    if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
+  //   const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
+  //   if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
+
+  //   const tokenData = this.createToken(findUser);
+  //   const cookie = this.createCookie(tokenData);
+
+  //   return { cookie, findUser };
+  // }
+
+  public async login(uuid: string): Promise<{ cookie: string; findUser: User }> {
+    if (isEmpty(uuid)) throw new HttpException(400, 'Empty uuid');
+
+    const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
+    if (!findUser) throw new HttpException(409, `You're uuid ${uuid} not found`);
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);
@@ -37,10 +49,10 @@ class AuthService extends Repository<UserEntity> {
     return { cookie, findUser };
   }
 
-  public async logout(userData: User): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+  public async logout(uuid: string): Promise<User> {
+    if (isEmpty(uuid)) throw new HttpException(400, 'Empty uuid');
 
-    const findUser: User = await UserEntity.findOne({ where: { email: userData.email, password: userData.password } });
+    const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
     if (!findUser) throw new HttpException(409, "You're not user");
 
     return findUser;

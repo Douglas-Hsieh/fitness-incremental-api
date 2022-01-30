@@ -1,6 +1,6 @@
 export interface FitnessLocation {
   id: number;
-  userId: string;
+  userId: number;
   imageUri: string;
   coordinates: number[];
   isVerified: boolean | null;

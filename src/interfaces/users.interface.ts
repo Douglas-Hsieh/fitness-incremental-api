@@ -1,5 +1,6 @@
 export interface User {
   id: number;
-  email: string;
-  password: string;
+  uuid: string;
+  roles: string;
+  expoPushToken: string;
 }

@@ -10,7 +10,7 @@ export class FitnessLocationEntity extends BaseEntity implements FitnessLocation
   @Column()
   @IsNotEmpty()
   @Unique(['userId'])
-  userId: string;
+  userId: number;
 
   @Column()
   @IsNotEmpty()
