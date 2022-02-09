@@ -2,6 +2,7 @@
     "env": "development",
     "dbConfig": {
         "host": "pg",
+        "port": 5432,
         "user": "postgres",
         "password": "password",
         "database": "test"

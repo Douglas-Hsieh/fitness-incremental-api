@@ -1,10 +1,11 @@
 {
     "env": "production",
     "dbConfig": {
-        "host": "localhost",
-        "user": "root",
-        "password": "password",
-        "database": "test"
+        "host": "app-9c680029-f897-4b0f-bc91-e6849609f160-do-user-8502562-0.b.db.ondigitalocean.com",
+        "port": 25060,
+        "user": "pg",
+        "password": "lZ5MJ3Okgv7RAbnY",
+        "database": "pg"
     },
     "secretKey": "secretKey",
     "log": {

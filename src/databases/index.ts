@@ -3,11 +3,11 @@ import { join } from 'path';
 import { ConnectionOptions } from 'typeorm';
 import { dbConfig } from '@interfaces/db.interface';
 
-const { host, user, password, database }: dbConfig = config.get('dbConfig');
+const { host, port, user, password, database }: dbConfig = config.get('dbConfig');
 export const dbConnection: ConnectionOptions = {
   type: 'postgres',
   host: host,
-  port: 5432,
+  port: port,
   username: user,
   password: password,
   database: database,
