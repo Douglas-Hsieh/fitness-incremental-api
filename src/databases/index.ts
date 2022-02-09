@@ -21,4 +21,5 @@ export const dbConnection: ConnectionOptions = {
     migrationsDir: 'src/migration',
     subscribersDir: 'src/subscriber',
   },
+  ssl: true,
 };
