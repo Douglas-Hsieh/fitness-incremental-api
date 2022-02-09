@@ -11,8 +11,7 @@ export const pushNotificationsJob = new CronJob('0 * * * * *', async () => {
 
   const userService = new UserService();
   const users = await userService.findAllUser();
-  // const pushTokens = users.map(user => user.expoPushToken);
-  const pushTokens = [];
+  const pushTokens = users.map(user => user.expoPushToken).filter(pushToken => !pushToken);
 
   // Create the messages that you want to send to clients
   const messages = [];

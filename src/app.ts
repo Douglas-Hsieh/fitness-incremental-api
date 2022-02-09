@@ -93,7 +93,7 @@ class App {
   }
 
   private startCronJobs() {
-    pushNotificationsJob.start();
+    // pushNotificationsJob.start();
   }
 }
 
