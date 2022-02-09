@@ -3,6 +3,7 @@ import { join } from 'path';
 import { ConnectionOptions } from 'typeorm';
 import { dbConfig } from '@interfaces/db.interface';
 
+const env: string = config.get('env');
 const { host, port, user, password, database }: dbConfig = config.get('dbConfig');
 export const dbConnection: ConnectionOptions = {
   type: 'postgres',
@@ -21,5 +22,11 @@ export const dbConnection: ConnectionOptions = {
     migrationsDir: 'src/migration',
     subscribersDir: 'src/subscriber',
   },
-  ssl: true,
+  ssl:
+    env === 'production'
+      ? {
+          rejectUnauthorized: true,
+          ca: process.env.CA_CERT,
+        }
+      : false,
 };
