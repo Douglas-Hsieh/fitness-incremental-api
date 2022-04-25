@@ -8,6 +8,7 @@ import { HttpException } from '@exceptions/HttpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import { isEmpty } from '@utils/util';
+import { verify } from '@/oauth';
 
 @EntityRepository()
 class AuthService extends Repository<UserEntity> {
@@ -37,11 +38,13 @@ class AuthService extends Repository<UserEntity> {
   //   return { cookie, findUser };
   // }
 
-  public async login(uuid: string): Promise<{ cookie: string; findUser: User }> {
-    if (isEmpty(uuid)) throw new HttpException(400, 'Empty uuid');
+  public async login(idToken: string): Promise<{ cookie: string; findUser: User }> {
+    if (isEmpty(idToken)) throw new HttpException(400, 'Empty idToken');
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
-    if (!findUser) throw new HttpException(409, `You're uuid ${uuid} not found`);
+    const userId = await verify(idToken);
+
+    const findUser: User = await UserEntity.findOne({ where: { uuid: userId } });
+    if (!findUser) throw new HttpException(409, `uuid ${userId} not found`);
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);
@@ -53,7 +56,7 @@ class AuthService extends Repository<UserEntity> {
     if (isEmpty(uuid)) throw new HttpException(400, 'Empty uuid');
 
     const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
-    if (!findUser) throw new HttpException(409, "You're not user");
+    if (!findUser) throw new HttpException(409, `User with uuid: ${uuid} not found`);
 
     return findUser;
   }

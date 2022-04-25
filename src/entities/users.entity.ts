@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Unique, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '@interfaces/users.interface';
 
@@ -14,6 +14,14 @@ export class UserEntity extends BaseEntity implements User {
 
   @Column({ default: '' })
   roles: string;
+
+  @Column()
+  @IsNotEmpty()
+  os: string;
+
+  @Column({ nullable: true })
+  @IsEmail()
+  email: string;
 
   @Column({ nullable: true })
   expoPushToken: string;

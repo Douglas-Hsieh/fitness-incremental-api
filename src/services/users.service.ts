@@ -1,11 +1,10 @@
-import { hash } from 'bcrypt';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from '@dtos/users.dto';
 import { UserEntity } from '@entities/users.entity';
 import { HttpException } from '@exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import { isEmpty } from '@utils/util';
-import { randomUUID } from 'crypto';
+import { verify } from '@/oauth';
 
 @EntityRepository()
 class UserService extends Repository<UserEntity> {
@@ -35,13 +34,19 @@ class UserService extends Repository<UserEntity> {
   //   return createUserData;
   // }
 
-  public async createUser(): Promise<User> {
-    const uuid = randomUUID();
+  public async createUser(userData: CreateUserDto): Promise<User> {
+    const userId = await verify(userData.idToken);
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
-    if (findUser) throw new HttpException(409, `uuid ${uuid} already exists`);
+    const findUser: User = await UserEntity.findOne({ where: { uuid: userId } });
+    if (findUser) throw new HttpException(409, `uuid ${userId} already exists`);
 
-    const createUserData: User = await UserEntity.create({ uuid: uuid }).save();
+    const createUserData: User = await UserEntity.create({
+      uuid: userId,
+      os: userData.os,
+      email: userData.email,
+      expoPushToken: userData.expoPushToken,
+    }).save();
+
     return createUserData;
   }
 
@@ -59,12 +64,12 @@ class UserService extends Repository<UserEntity> {
   // }
 
   public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+    if (isEmpty(userData)) throw new HttpException(400, 'userData empty');
 
     const findUser: User = await UserEntity.findOne({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "You're not user");
 
-    await UserEntity.update(userId, { ...userData });
+    await UserEntity.update(userId, { ...findUser, ...userData });
 
     const updateUser: User = await UserEntity.findOne({ where: { id: userId } });
     return updateUser;
