@@ -24,7 +24,13 @@ export class UserEntity extends BaseEntity implements User {
   email: string;
 
   @Column({ nullable: true })
+  timezoneOffsetMinutes: number;
+
+  @Column({ nullable: true })
   expoPushToken: string;
+
+  @Column({ nullable: true })
+  lastNotificationTime: Date;
 
   @Column()
   @CreateDateColumn()

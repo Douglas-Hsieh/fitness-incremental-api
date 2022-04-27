@@ -35,15 +35,16 @@ class UserService extends Repository<UserEntity> {
   // }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
-    const userId = await verify(userData.idToken);
+    const sub = await verify(userData.idToken);
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: userId } });
-    if (findUser) throw new HttpException(409, `uuid ${userId} already exists`);
+    const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
+    if (findUser) throw new HttpException(409, `uuid ${sub} already exists`);
 
     const createUserData: User = await UserEntity.create({
-      uuid: userId,
+      uuid: sub,
       os: userData.os,
       email: userData.email,
+      timezoneOffsetMinutes: userData.timezoneOffsetMinutes,
       expoPushToken: userData.expoPushToken,
     }).save();
 
@@ -63,7 +64,7 @@ class UserService extends Repository<UserEntity> {
   //   return updateUser;
   // }
 
-  public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
+  public async updateUser(userId: number, userData: Partial<User>): Promise<User> {
     if (isEmpty(userData)) throw new HttpException(400, 'userData empty');
 
     const findUser: User = await UserEntity.findOne({ where: { id: userId } });

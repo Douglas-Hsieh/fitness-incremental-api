@@ -8,6 +8,6 @@ export async function verify(idToken: string) {
     audience: webClientId,
   });
   const payload = ticket.getPayload();
-  const userId = payload['sub'];
-  return userId;
+  const sub = payload['sub'];
+  return sub;
 }

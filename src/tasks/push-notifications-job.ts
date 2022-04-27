@@ -1,8 +1,27 @@
 import UserService from '@/services/users.service';
 import { CronJob } from 'cron';
 import { Expo } from 'expo-server-sdk';
+import quotes from '@/data/quotes';
 
-export const pushNotificationsJob = new CronJob('0 * * * * *', async () => {
+const EVERY_SECOND = '* * * * * *';
+const EVERY_MINUTE = '0 * * * * *';
+const EVERY_HALF_HOUR = '0 0,30 * * * *';
+const EVERY_HOUR = '0 0 * * * *';
+
+/**
+ * e.g. 1 => -23, 12 => -12
+ */
+function getLocalOffsetAlt(offset: number) {
+  if (offset > 0) {
+    return offset - 24;
+  } else if (offset < 0) {
+    return offset + 24;
+  } else {
+    return 0;
+  }
+}
+
+export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
   console.log('Starting pushNotificationsJob');
 
   // Create a new Expo SDK client
@@ -11,26 +30,55 @@ export const pushNotificationsJob = new CronJob('0 * * * * *', async () => {
 
   const userService = new UserService();
   const users = await userService.findAllUser();
-  const pushTokens = users.map(user => user.expoPushToken).filter(pushToken => !pushToken);
+
+  const now = new Date();
+  const halfDayBefore = new Date(Date.now() - 43200000);
+
+  // localTime = utcTime + localOffset => localTime - utcTime = localOffset
+  const LOCAL_TIME_5PM = 17;
+  const utcTime = now.getUTCHours();
+  const localOffset5PM = LOCAL_TIME_5PM - utcTime;
+  console.log('localOffset5PM', localOffset5PM);
+
+  const usersToNotify = users
+    .filter(user => user.expoPushToken)
+    .filter(user => user.lastNotificationTime < halfDayBefore)
+    .filter(user => {
+      const localOffset = -(user.timezoneOffsetMinutes / 60);
+      const localOffsetAlt = getLocalOffsetAlt(localOffset);
+      const localOffsetEquivalents = [localOffset, localOffsetAlt];
+      console.log('localOffsetEquivalents', localOffsetEquivalents);
+      return localOffsetEquivalents.includes(localOffset5PM);
+    });
+
+  console.log('usersToNotify.length', usersToNotify.length);
 
   // Create the messages that you want to send to clients
   const messages = [];
-  for (const pushToken of pushTokens) {
+  for (const user of usersToNotify) {
+    const { expoPushToken } = user;
+
     // Each push token looks like ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
 
     // Check that all your push tokens appear to be valid Expo push tokens
-    if (!Expo.isExpoPushToken(pushToken)) {
-      console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    if (!Expo.isExpoPushToken(expoPushToken)) {
+      console.error(`Push token ${expoPushToken} is not a valid Expo push token`);
       continue;
     }
 
+    const i = Math.floor(Math.random() * quotes.length);
+    const quote = quotes[i];
+
     // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
     messages.push({
-      to: pushToken,
+      to: expoPushToken,
       sound: 'default',
-      body: 'This is a test notification',
+      title: `From ${quote.author}`,
+      body: quote.text,
       data: { withSome: 'data' },
     });
+
+    userService.updateUser(user.id, { lastNotificationTime: new Date() });
   }
 
   // The Expo push notification service accepts batches of notifications so
