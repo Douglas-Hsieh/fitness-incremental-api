@@ -8,7 +8,8 @@ import { HttpException } from '@exceptions/HttpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import { isEmpty } from '@utils/util';
-import { verify } from '@/oauth';
+import { verify as verifyGoogleUser } from '@/auth/google-auth';
+import { verify as verifyAppleUser } from '@/auth/apple-auth';
 
 @EntityRepository()
 class AuthService extends Repository<UserEntity> {
@@ -38,13 +39,20 @@ class AuthService extends Repository<UserEntity> {
   //   return { cookie, findUser };
   // }
 
-  public async login(idToken: string): Promise<{ cookie: string; findUser: User }> {
+  public async login(idToken: string, os: string): Promise<{ cookie: string; findUser: User }> {
     if (isEmpty(idToken)) throw new HttpException(400, 'Empty idToken');
 
-    const userId = await verify(idToken);
+    let sub: string;
+    if (os === 'android') {
+      sub = (await verifyGoogleUser(idToken)).sub;
+    } else if (os === 'ios') {
+      sub = (await verifyAppleUser(idToken)).sub;
+    } else {
+      throw Error('User cannot login because they are not using android or ios');
+    }
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: userId } });
-    if (!findUser) throw new HttpException(409, `uuid ${userId} not found`);
+    const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
+    if (!findUser) throw new HttpException(409, `uuid ${sub} not found`);
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);
