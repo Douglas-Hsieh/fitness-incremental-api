@@ -19,7 +19,7 @@ class AuthController {
 
   public logIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { idToken, serverAuthCode, os } = req.body;
+      const { idToken, os } = req.body;
 
       const { cookie, findUser } = await this.authService.login(idToken, os);
 

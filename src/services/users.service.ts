@@ -4,7 +4,7 @@ import { UserEntity } from '@entities/users.entity';
 import { HttpException } from '@exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import { isEmpty } from '@utils/util';
-import { verify as verifyGoogleUser } from '@/auth/google-auth';
+import { acquireOAuthCredentials, verify as verifyGoogleUser } from '@/auth/google-auth';
 import { verify as verifyAppleUser } from '@/auth/apple-auth';
 
 @EntityRepository()
@@ -36,12 +36,12 @@ class UserService extends Repository<UserEntity> {
   // }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
-    const { idToken, os, timezoneOffsetMinutes, expoPushToken } = userData;
+    const { idToken, serverAuthCode, os, timezoneOffsetMinutes, expoPushToken } = userData;
 
     let sub: string;
     let email: string;
     if (os === 'android') {
-      const payload = await verifyGoogleUser(idToken)['sub'];
+      const payload = await verifyGoogleUser(idToken);
       sub = payload.sub;
       email = payload.email;
     } else if (os === 'ios') {
@@ -49,11 +49,13 @@ class UserService extends Repository<UserEntity> {
       sub = payload.sub;
       email = payload.email;
     } else {
-      throw Error('User cannot login because they are not using android or ios');
+      throw Error('Cannot create user because they are not using android or ios');
     }
 
     const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
     if (findUser) throw new HttpException(409, `uuid ${sub} already exists`);
+
+    const tokens = await acquireOAuthCredentials(serverAuthCode);
 
     const createUserData: User = await UserEntity.create({
       uuid: sub,
@@ -61,6 +63,7 @@ class UserService extends Repository<UserEntity> {
       email: email,
       timezoneOffsetMinutes: timezoneOffsetMinutes,
       expoPushToken: expoPushToken,
+      oAuthCredentials: JSON.stringify(tokens),
     }).save();
 
     return createUserData;

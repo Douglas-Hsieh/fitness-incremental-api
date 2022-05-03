@@ -2,6 +2,8 @@ import UserService from '@/services/users.service';
 import { CronJob } from 'cron';
 import { Expo } from 'expo-server-sdk';
 import quotes from '@/data/quotes';
+import { getStepsToday } from '@/auth/google-auth';
+import { STEP_THRESHOLDS } from '@/data/constants';
 
 const EVERY_SECOND = '* * * * * *';
 const EVERY_MINUTE = '0 * * * * *';
@@ -38,7 +40,6 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
   const LOCAL_TIME_5PM = 17;
   const utcTime = now.getUTCHours();
   const localOffset5PM = LOCAL_TIME_5PM - utcTime;
-  console.log('localOffset5PM', localOffset5PM);
 
   const usersToNotify = users
     .filter(user => user.expoPushToken)
@@ -47,7 +48,6 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
       const localOffset = -(user.timezoneOffsetMinutes / 60);
       const localOffsetAlt = getLocalOffsetAlt(localOffset);
       const localOffsetEquivalents = [localOffset, localOffsetAlt];
-      console.log('localOffsetEquivalents', localOffsetEquivalents);
       return localOffsetEquivalents.includes(localOffset5PM);
     });
 
@@ -58,23 +58,36 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
   for (const user of usersToNotify) {
     const { expoPushToken } = user;
 
-    // Each push token looks like ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
-
-    // Check that all your push tokens appear to be valid Expo push tokens
     if (!Expo.isExpoPushToken(expoPushToken)) {
       console.error(`Push token ${expoPushToken} is not a valid Expo push token`);
       continue;
     }
 
-    const i = Math.floor(Math.random() * quotes.length);
-    const quote = quotes[i];
+    let title: string, body: string;
+    if (user.os === 'android') {
+      const stepsToday = await getStepsToday(user);
+      const stepsThresholds = STEP_THRESHOLDS.filter(threshold => stepsToday < threshold);
+      title = `${stepsToday} steps so far`;
+      if (stepsThresholds.length <= 0) {
+        body = `Great job! You've unlocked all step rewards today`;
+      } else {
+        const stepsThreshold = Math.min(...stepsThresholds);
+        const stepsUntilReward = stepsThreshold - stepsToday;
+        body = `Only ${stepsUntilReward} more steps to unlock your next reward`;
+      }
+    } else {
+      const i = Math.floor(Math.random() * quotes.length);
+      const quote = quotes[i];
+      title = `From ${quote.author}`;
+      body = quotes[i].text;
+    }
 
     // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
     messages.push({
       to: expoPushToken,
       sound: 'default',
-      title: `From ${quote.author}`,
-      body: quote.text,
+      title: title,
+      body: body,
       data: { withSome: 'data' },
     });
 

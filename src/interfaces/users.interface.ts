@@ -7,4 +7,5 @@ export interface User {
   timezoneOffsetMinutes: number;
   expoPushToken: string;
   lastNotificationTime: Date;
+  oAuthCredentials: string;
 }

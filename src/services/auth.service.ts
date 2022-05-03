@@ -52,7 +52,7 @@ class AuthService extends Repository<UserEntity> {
     }
 
     const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
-    if (!findUser) throw new HttpException(409, `uuid ${sub} not found`);
+    if (!findUser) throw new HttpException(409, `User cannot login because uuid ${sub} not found`);
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);

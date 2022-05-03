@@ -32,6 +32,9 @@ export class UserEntity extends BaseEntity implements User {
   @Column({ nullable: true })
   lastNotificationTime: Date;
 
+  @Column({ nullable: true })
+  oAuthCredentials: string;
+
   @Column()
   @CreateDateColumn()
   createdAt: Date;

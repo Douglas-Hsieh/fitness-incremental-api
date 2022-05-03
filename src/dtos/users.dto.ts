@@ -5,6 +5,9 @@ export class CreateUserDto {
   public idToken: string;
 
   @IsString()
+  public serverAuthCode: string;
+
+  @IsString()
   public os: string;
 
   @IsEmail()

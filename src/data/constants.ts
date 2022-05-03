@@ -1,0 +1,1 @@
+export const STEP_THRESHOLDS = [5000, 7500, 10000, 12500, 15000];
