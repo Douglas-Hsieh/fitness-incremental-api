@@ -51,8 +51,8 @@ class AuthService extends Repository<UserEntity> {
       throw Error('User cannot login because they are not using android or ios');
     }
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
-    if (!findUser) throw new HttpException(409, `User cannot login because uuid ${sub} not found`);
+    const findUser: User = await UserEntity.findOne({ where: { sub: sub } });
+    if (!findUser) throw new HttpException(409, `User cannot login because sub ${sub} not found`);
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);
@@ -63,7 +63,7 @@ class AuthService extends Repository<UserEntity> {
   public async logout(uuid: string): Promise<User> {
     if (isEmpty(uuid)) throw new HttpException(400, 'Empty uuid');
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: uuid } });
+    const findUser: User = await UserEntity.findOne({ where: { sub: uuid } });
     if (!findUser) throw new HttpException(409, `User with uuid: ${uuid} not found`);
 
     return findUser;

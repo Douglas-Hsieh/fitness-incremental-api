@@ -9,8 +9,8 @@ export class UserEntity extends BaseEntity implements User {
 
   @Column()
   @IsNotEmpty()
-  @Unique(['uuid'])
-  uuid: string;
+  @Unique(['sub'])
+  sub: string;
 
   @Column({ default: '' })
   roles: string;

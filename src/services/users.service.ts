@@ -52,13 +52,13 @@ class UserService extends Repository<UserEntity> {
       throw Error('Cannot create user because they are not using android or ios');
     }
 
-    const findUser: User = await UserEntity.findOne({ where: { uuid: sub } });
-    if (findUser) throw new HttpException(409, `uuid ${sub} already exists`);
+    const findUser: User = await UserEntity.findOne({ where: { sub: sub } });
+    if (findUser) throw new HttpException(409, `sub ${sub} already exists`);
 
     const tokens = await acquireOAuthCredentials(serverAuthCode);
 
     const createUserData: User = await UserEntity.create({
-      uuid: sub,
+      sub: sub,
       os: os,
       email: email,
       timezoneOffsetMinutes: timezoneOffsetMinutes,
