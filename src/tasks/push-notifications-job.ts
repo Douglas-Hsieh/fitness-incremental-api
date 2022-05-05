@@ -2,7 +2,7 @@ import UserService from '@/services/users.service';
 import { CronJob } from 'cron';
 import { Expo } from 'expo-server-sdk';
 import quotes from '@/data/quotes';
-import { getStepsToday } from '@/auth/google-auth';
+import { getStepsToday, refreshAccessToken } from '@/auth/google-auth';
 import { STEP_THRESHOLDS } from '@/data/constants';
 
 const EVERY_SECOND = '* * * * * *';
@@ -23,7 +23,7 @@ function getLocalOffsetAlt(offset: number) {
   }
 }
 
-export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
+export const pushNotificationsJob = new CronJob(EVERY_MINUTE, async () => {
   console.log('Starting pushNotificationsJob');
 
   // Create a new Expo SDK client
@@ -65,6 +65,7 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
 
     let title: string, body: string;
     if (user.os === 'android') {
+      await refreshAccessToken(user);
       const stepsToday = await getStepsToday(user);
       const stepsThresholds = STEP_THRESHOLDS.filter(threshold => stepsToday < threshold);
       title = `${stepsToday} steps so far`;
