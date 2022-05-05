@@ -23,7 +23,7 @@ function getLocalOffsetAlt(offset: number) {
   }
 }
 
-export const pushNotificationsJob = new CronJob(EVERY_MINUTE, async () => {
+export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
   console.log('Starting pushNotificationsJob');
 
   // Create a new Expo SDK client
