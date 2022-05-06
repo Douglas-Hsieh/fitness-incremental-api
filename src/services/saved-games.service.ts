@@ -32,8 +32,6 @@ class SavedGameService extends Repository<SavedGameEntity> {
     );
 
     const upsertSavedGame = await SavedGameEntity.findOne({ where: { userId: findUser.id } });
-    console.log('upsertSavedGame', upsertSavedGame);
-
     return upsertSavedGame;
   }
 }
