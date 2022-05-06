@@ -6,6 +6,7 @@ import { User } from '@interfaces/users.interface';
 import { isEmpty } from '@utils/util';
 import { acquireOAuthCredentials, verify as verifyGoogleUser } from '@/auth/google-auth';
 import { verify as verifyAppleUser } from '@/auth/apple-auth';
+import { Credentials } from 'google-auth-library';
 
 @EntityRepository()
 class UserService extends Repository<UserEntity> {
@@ -40,10 +41,12 @@ class UserService extends Repository<UserEntity> {
 
     let sub: string;
     let email: string;
+    let tokens: Credentials;
     if (os === 'android') {
       const payload = await verifyGoogleUser(idToken);
       sub = payload.sub;
       email = payload.email;
+      tokens = await acquireOAuthCredentials(serverAuthCode);
     } else if (os === 'ios') {
       const payload = await verifyAppleUser(idToken);
       sub = payload.sub;
@@ -54,8 +57,6 @@ class UserService extends Repository<UserEntity> {
 
     const findUser: User = await UserEntity.findOne({ where: { sub: sub } });
     if (findUser) throw new HttpException(409, `sub ${sub} already exists`);
-
-    const tokens = await acquireOAuthCredentials(serverAuthCode);
 
     const createUserData: User = await UserEntity.create({
       sub: sub,
