@@ -30,11 +30,6 @@ class FitnessLocationsRoute implements Routes {
 
 const setFitnessLocation = async (req: RequestWithFitnessLocation, res: Response, next: NextFunction) => {
   const fitnessLocationId = parseInt(req.params.fitnessLocationId);
-  if (isNaN(fitnessLocationId)) {
-    res.status(404);
-    return res.send('Fitness location not found because fitnessLocationId is NaN')
-  }
-
   req.fitnessLocation = await FitnessLocationEntity.findOne({ where: { id: fitnessLocationId } });
   if (req.fitnessLocation == null) {
     res.status(404);

@@ -30,7 +30,7 @@ class UsersRoute implements Routes {
       validationMiddleware(CreateUserDto, 'body', true),
       this.usersController.updateUser,
     );
-    this.router.delete(`${this.path}/:id(\\d+)`, auth, setUser, authDeleteUser, this.usersController.deleteUser);
+    this.router.delete(`${this.path}/:id(\\d+)`, this.usersController.deleteUser);
   }
 }
 
@@ -51,7 +51,5 @@ const authUpdateUser = (req, res, next) => {
   }
   next();
 };
-
-const authDeleteUser = authUpdateUser;
 
 export default UsersRoute;
