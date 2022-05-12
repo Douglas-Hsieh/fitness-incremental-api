@@ -98,10 +98,10 @@ class UserService extends Repository<UserEntity> {
   public async deleteUser(userId: number): Promise<User> {
     if (isEmpty(userId)) throw new HttpException(400, "You're not userId");
 
-    const findUser: User = await UserEntity.findOne({ where: { id: userId } });
+    const findUser: UserEntity = await UserEntity.findOne({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "You're not user");
 
-    await UserEntity.delete({ id: userId });
+    await UserEntity.remove(findUser);
     return findUser;
   }
 }
