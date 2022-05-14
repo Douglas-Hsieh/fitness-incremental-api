@@ -68,13 +68,19 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
       await refreshAccessToken(user);
       const stepsToday = await getStepsToday(user);
       const stepsThresholds = STEP_THRESHOLDS.filter(threshold => stepsToday < threshold);
-      title = `${stepsToday} steps so far`;
-      if (stepsThresholds.length <= 0) {
-        body = `Great job! You've unlocked all step rewards today`;
+      const rewardsLeft = stepsThresholds.length;
+
+      title = `${stepsToday} steps since 5 PM`;
+      const stepsThreshold = Math.min(...stepsThresholds);
+      const stepsUntilReward = stepsThreshold - stepsToday;
+
+      if (rewardsLeft <= 0) {
+        body = `Great job! You've claimed all step rewards today`;
+      } else if (rewardsLeft < STEP_THRESHOLDS.length) {
+        const rewardsEarned = STEP_THRESHOLDS.length - rewardsLeft;
+        body = `You have earned ${rewardsEarned} step rewards today. ${stepsUntilReward} more steps to claim your next reward`;
       } else {
-        const stepsThreshold = Math.min(...stepsThresholds);
-        const stepsUntilReward = stepsThreshold - stepsToday;
-        body = `Only ${stepsUntilReward} more steps to unlock your next reward`;
+        body = `Only ${stepsUntilReward} more steps to claim your first reward`;
       }
     } else {
       const i = Math.floor(Math.random() * quotes.length);
