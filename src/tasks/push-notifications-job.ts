@@ -1,7 +1,7 @@
 import UserService from '@/services/users.service';
 import { CronJob } from 'cron';
 import { Expo } from 'expo-server-sdk';
-import quotes from '@/data/quotes';
+import quotes from '@/data/betterQuotes';
 import { getStepsToday, refreshAccessToken } from '@/auth/google-auth';
 import { STEP_THRESHOLDS } from '@/data/constants';
 
@@ -85,7 +85,7 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
     } else {
       const i = Math.floor(Math.random() * quotes.length);
       const quote = quotes[i];
-      title = `From ${quote.author}`;
+      title = quote.author ? quote.author : '';
       body = quotes[i].text;
     }
 
