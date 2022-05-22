@@ -85,7 +85,7 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
     } else {
       const i = Math.floor(Math.random() * quotes.length);
       const quote = quotes[i];
-      title = quote.author ? quote.author : '';
+      title = quote.author ? `From ${quote.author}` : '';
       body = quotes[i].text;
     }
 
