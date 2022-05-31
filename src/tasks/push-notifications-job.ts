@@ -1,7 +1,6 @@
 import UserService from '@/services/users.service';
 import { CronJob } from 'cron';
 import { Expo } from 'expo-server-sdk';
-import quotes from '@/data/betterQuotes';
 import { getStepsToday, refreshAccessToken } from '@/auth/google-auth';
 import { STEP_THRESHOLDS } from '@/data/constants';
 
@@ -83,10 +82,8 @@ export const pushNotificationsJob = new CronJob(EVERY_HALF_HOUR, async () => {
         body = `Only ${stepsUntilReward} more steps to claim your first reward`;
       }
     } else {
-      const i = Math.floor(Math.random() * quotes.length);
-      const quote = quotes[i];
-      title = quote.author ? `From ${quote.author}` : '';
-      body = quotes[i].text;
+      title = 'Time to sync your steps';
+      body = 'How many steps have you done today?';
     }
 
     // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
